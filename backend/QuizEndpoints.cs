@@ -73,7 +73,7 @@ public static class QuizEndpoints
             var correctUrl = await connection.QueryFirstOrDefaultAsync<string>(sql, new { Id = request.CorrectObjectId });
 
             if (correctUrl == null)
-                return Results.BadRequest($"картинка по id:{request.CorrectObjectId} не найдена")
+                return Results.BadRequest($"картинка по id:{request.CorrectObjectId} не найдена");
 
             return Results.Ok(new { success = correctUrl == request.ImageUrl });
         });
