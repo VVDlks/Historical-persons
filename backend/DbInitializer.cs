@@ -3,7 +3,7 @@ using Dapper;
 
 namespace backend;
 
-public static class DbInitialazer
+public static class DbInitializer
 {
     public static void Init(string connectionString)
     {
@@ -12,21 +12,22 @@ public static class DbInitialazer
 
         connection.Execute(@"
             CREATE TABLE IF NOT EXISTS Categories (
-                Id INTEGER PRIMARY KEY AUTHOINCREMENT,
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 ObjectCategory VARCHAR(255) NOT NULL,
             );
         ");
 
         connection.Execute(@"
-            CREATE TABLE Persons (
-                Id INTEGER PRIMARY KEY AUTHOINCREMENT,
+            CREATE TABLE IF NOT EXISTS Persons (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 Name VARCHAR(255) NOT NULL,
                 Description TEXT NOT NULL,
                 Fact TEXT NOT NULL,
                 ImageUrl TEXT NOT NULL,
-                CategoryId INTEGER FOREIGN KEY
-                Period INTEGER NOT NULL
-            )
+                CategoryId INTEGER,
+                Period INTEGER NOT NULL,
+                FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
+            );
         ");
     }
 }

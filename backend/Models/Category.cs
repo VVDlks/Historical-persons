@@ -7,5 +7,4 @@ public class Category
 {
     public int Id { get; set; }
     public string ObjectCategory { get; set; } = string.Empty;
-    public int Period { get; set; }
 }

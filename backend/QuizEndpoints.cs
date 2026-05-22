@@ -29,7 +29,7 @@ public static class QuizEndpoints
         app.MapGet("/api/quize/level", async (int[] ids) =>
         {
             using var connection = new SqliteConnection(connectionString);
-            var correctSql = "SELECT * FROM Persons WHERE CateegoryId in @Ids ORDER BY RANDOM() LIMIT 1";
+            var correctSql = "SELECT * FROM Persons WHERE CategoryId in @Ids ORDER BY RANDOM() LIMIT 1";
             var correct = await connection.QueryFirstOrDefaultAsync<Person>(correctSql, new { Ids = ids });
 
             if (correct == null)
@@ -65,7 +65,7 @@ public static class QuizEndpoints
 
     private static void QuizeCheck(WebApplication app, string connectionString)
     {
-        app.MapGet("api/quize/ckeck", async (QuizCheckRequest request) =>
+        app.MapPost("api/quize/ckeck", async (QuizCheckRequest request) =>
         {
             using var connection = new SqliteConnection(connectionString);
 
