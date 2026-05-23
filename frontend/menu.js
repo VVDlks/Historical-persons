@@ -2,12 +2,6 @@ const API_URL = 'http://localhost:5127/api';
 
 async function loadMenu() {
     try {
-        const cachedIds = localStorage.getItem('selectedCategoryIds');
-        if (!cachedIds) {
-            window.location.href = 'index.html';
-            return;
-        }
-        
         const response = await fetch(`${API_URL}/levels`);
         if (!response.ok) {
             throw new Error("Ошибка сервера");
