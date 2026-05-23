@@ -11,6 +11,7 @@ public static class QuizEndpoints
         GetCategories(app, connectionString);
         GetQuize(app, connectionString);
         QuizeCheck(app, connectionString);
+        GetQuizLevels(app, connectionString);
     }
 
     private static void GetCategories(WebApplication app, string connectionString)
@@ -40,7 +41,7 @@ public static class QuizEndpoints
             FROM Persons 
             WHERE Period >= @MinPeriod AND Period <= @MaxPeriod
             ORDER BY RANDOM()
-            LIMIT 2;
+            LIMIT 3;
             ";
 
             var distractors = await connection.QueryAsync<string>(distractorsSql, new
@@ -78,4 +79,34 @@ public static class QuizEndpoints
             return Results.Ok(new { success = correctUrl == request.ImageUrl });
         });
     }
+
+    private static void GetQuizLevels(WebApplication app, string connectionString)
+    {
+        app.MapGet("api/levels", async () =>
+        {
+            using var connection = new SqliteConnection(connectionString);
+
+            var sql = @"
+            SELECT ql.Id, ql.Title, qlc.CategoryId
+            FROM QuizLevels ql
+            JOIN QuizLevelCategories qlc ON ql.id = qlc.QuizLevelId;
+            ";
+
+            var rawRows = await connection.QueryAsync<FlatLevelRow>(sql);
+
+            var levels = rawRows
+            .GroupBy(r => new { r.Id, r.Title })
+            .Select(g => new
+            {
+                Id = g.Key.Id,
+                Title = g.Key.Title,
+                CategoryIds = g.Select(r => r.CategoryId).ToArray()
+            });
+
+            return Results.Ok(levels);
+        });
+    }
+
+    private record FlatLevelRow(int Id, string Title, int CategoryId);
 }
+

@@ -13,7 +13,7 @@ public static class DbInitializer
         connection.Execute(@"
             CREATE TABLE IF NOT EXISTS Categories (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ObjectCategory VARCHAR(255) NOT NULL,
+                ObjectCategory VARCHAR(255) NOT NULL
             );
         ");
 
@@ -27,6 +27,23 @@ public static class DbInitializer
                 CategoryId INTEGER,
                 Period INTEGER NOT NULL,
                 FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
+            );
+        ");
+
+        connection.Execute(@"
+            CREATE TABLE IF NOT EXISTS QuizLevels (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Title VARCHAR(255) NOT NULL
+            );
+        ");
+
+        connection.Execute(@"
+            CREATE TABLE IF NOT EXISTS QuizLevelCategories (
+                QuizLevelId INTEGER,
+                CategoryId INTEGER,
+                PRIMARY KEY (QuizLevelId, CategoryId),
+                FOREIGN KEY (QuizLevelId) REFERENCES QuizLevels(Id) ON DELETE CASCADE,
+                FOREIGN KEY (CategoryId) REFERENCES Categories(Id) ON DELETE CASCADE
             );
         ");
     }
