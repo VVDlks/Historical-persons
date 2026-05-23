@@ -39,7 +39,8 @@ public static class QuizEndpoints
             var distractorsSql = @"
             SELECT ImageUrl
             FROM Persons 
-            WHERE Period >= @MinPeriod AND Period <= @MaxPeriod
+            WHERE (Period >= @MinPeriod AND Period <= @MaxPeriod)
+                AND id != @CorrectId
             ORDER BY RANDOM()
             LIMIT 3;
             ";
@@ -47,7 +48,8 @@ public static class QuizEndpoints
             var distractors = await connection.QueryAsync<string>(distractorsSql, new
             {
                 MinPeriod = correct.Period - 3,
-                MaxPeriod = correct.Period + 2
+                MaxPeriod = correct.Period + 2,
+                CorrectId = correct.Id
             });
 
             var images = distractors.ToList();
@@ -59,7 +61,8 @@ public static class QuizEndpoints
                 description = correct.Description,
                 correctName = correct.Name,
                 fact = correct.Fact,
-                imageOptions = shuffledImages
+                imageOptions = shuffledImages,
+                correctImageUrl = correct.ImageUrl
             });
         });
     }
@@ -98,15 +101,15 @@ public static class QuizEndpoints
             .GroupBy(r => new { r.Id, r.Title })
             .Select(g => new
             {
-                Id = g.Key.Id,
-                Title = g.Key.Title,
-                CategoryIds = g.Select(r => r.CategoryId).ToArray()
+                id = g.Key.Id,
+                title = g.Key.Title,
+                categoryIds = g.Select(r => r.CategoryId).ToArray()
             });
 
             return Results.Ok(levels);
         });
     }
 
-    private record FlatLevelRow(int Id, string Title, int CategoryId);
+    private record FlatLevelRow(long Id, string Title, long CategoryId);
 }
 
