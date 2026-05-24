@@ -26,9 +26,12 @@ async function loadGame() {
         const section = document.createElement('section');
         section.className = 'quize-description';
 
-        const name = document.createElement('h3');
+        const name = document.createElement('p');
+        name.className = 'quiz-person-name';
         name.textContent = quize.correctName;
-        const description = document.createElement('h4');
+        
+        const description = document.createElement('p');
+        description.className = 'quiz-person-description';
         description.textContent = quize.description;
         section.appendChild(name);
         section.appendChild(description);
@@ -52,13 +55,13 @@ function loadImages(quize) {
 
     images.forEach(imageUrl => {
         const picture = document.createElement('img');
-        picture.src = imageUrl.startsWith('images/') ? imageUrl : `images/${imageUrl}`;
+        picture.src = imageUrl.startsWith('images/') ? imageUrl : `images/persons/${imageUrl}`;
 
         picture.onerror = () => {
             picture.src = `https://ui-avatars.com/api/?name=${imageUrl.split('.')[0]}&background=random`;
         };
 
-        picture.className = 'quiz-img'ж
+        picture.className = 'quiz-img';
 
         picture.addEventListener('click', () => {
             handleAnswer(picture, imageUrl);
@@ -74,11 +77,9 @@ function handleAnswer(selectedImg, selectedUrl) {
     const allImages = document.querySelectorAll('.images-block img');
     allImages.forEach(img => img.style.pointerEvents = 'none');
 
-    const correctUrl = currentQuizData.correctImageUrl.startsWith('images/') 
-        ? currentQuizData.correctImageUrl 
-        : `images/${currentQuizData.correctImageUrl}`;
+    const correctUrl = currentQuizData.correctImageUrl;
 
-    const isCorrect = selectedImg.getAttribute('src') === correctUrl;
+    const isCorrect = selectedImg.getAttribute('src').endsWith(correctUrl);
 
     const resultSection = document.createElement('div');
     resultSection.className = 'result-block';
@@ -88,19 +89,23 @@ function handleAnswer(selectedImg, selectedUrl) {
 
     if (isCorrect) {
         resultText.textContent = `Правильно! Это ${currentQuizData.correctName}!`;
-        selectedImg.style.border = "5px solid green";
-    } else {
-        resultText.textContent = `Ошибка! Это ${currentQuizData.correctName}.`;
-        selectedImg.style.border = "5px solid red";
-
+        selectedImg.classList.add('correct');
         allImages.forEach(img => {
-            if (img.getAttribute('src') === correctUrl) {
-                img.style.border = "5px solid green";
+            if (img !== selectedImg) img.classList.add('dimmed');
+        });
+    } else {
+        resultText.textContent = `Ошибка!`;
+        selectedImg.classList.add('wrong');
+        allImages.forEach(img => {
+            if (img.getAttribute('src').endsWith(correctUrl)) {
+                img.classList.add('correct');
+            } else if (img !== selectedImg) {
+                img.classList.add('dimmed');
             }
         });
     }
 
-    factText.textContent = 'currentQuizData.fact';
+    factText.textContent = currentQuizData.fact;
 
     const nextBtn = document.createElement('button');
     nextBtn.textContent = "Следующий вопрос";
