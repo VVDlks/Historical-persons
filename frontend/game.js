@@ -50,11 +50,15 @@ async function loadGame() {
 function loadImages(quize) {
     const imagesSection = document.createElement('div');
     imagesSection.className = "images-block";
+    const options = quize.imageOptions;
+    options.forEach(opt => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'img-wrapper';
+        wrapper.dataset.imageUrl = opt.imageUrl || opt;
 
-    const images = quize.imageOptions;
-
-    images.forEach(imageUrl => {
         const picture = document.createElement('img');
+        const imageUrl = opt.imageUrl || opt;
+        picture.dataset.imageUrl = imageUrl;
         picture.src = imageUrl.startsWith('images/') ? imageUrl : `images/persons/${imageUrl}`;
 
         picture.onerror = () => {
@@ -63,23 +67,33 @@ function loadImages(quize) {
 
         picture.className = 'quiz-img';
 
-        picture.addEventListener('click', () => {
-            handleAnswer(picture, imageUrl);
+        const sticker = document.createElement('div');
+        sticker.className = 'img-sticker';
+        sticker.textContent = opt.name || "Неизвестно";
+
+        wrapper.appendChild(picture);
+        wrapper.appendChild(sticker);
+
+        wrapper.addEventListener('click', () => {
+            handleAnswer(wrapper, picture, imageUrl);
         });
 
-        imagesSection.appendChild(picture);
+        imagesSection.appendChild(wrapper);
     });
 
     return imagesSection;
 }
 
-function handleAnswer(selectedImg, selectedUrl) {
-    const allImages = document.querySelectorAll('.images-block img');
-    allImages.forEach(img => img.style.pointerEvents = 'none');
+function handleAnswer(selectedWrapper, selectedImg, selectedUrl) {
+    const imagesBlock = document.querySelector('.images-block');
+    if (imagesBlock) imagesBlock.classList.add('answered');
+
+    const allWrappers = document.querySelectorAll('.images-block .img-wrapper');
+    allWrappers.forEach(w => w.style.pointerEvents = 'none');
 
     const correctUrl = currentQuizData.correctImageUrl;
 
-    const isCorrect = selectedImg.getAttribute('src').endsWith(correctUrl);
+    const isCorrect = selectedUrl === correctUrl;
 
     const resultSection = document.createElement('div');
     resultSection.className = 'result-block';
@@ -88,19 +102,20 @@ function handleAnswer(selectedImg, selectedUrl) {
     const factText = document.createElement('p');
 
     if (isCorrect) {
-        resultText.textContent = `Правильно! Это ${currentQuizData.correctName}!`;
+        resultText.textContent = `Правильно!`;
         selectedImg.classList.add('correct');
-        allImages.forEach(img => {
-            if (img !== selectedImg) img.classList.add('dimmed');
+        allWrappers.forEach(w => {
+            if (w !== selectedWrapper) w.classList.add('dimmed');
         });
     } else {
         resultText.textContent = `Ошибка!`;
         selectedImg.classList.add('wrong');
-        allImages.forEach(img => {
-            if (img.getAttribute('src').endsWith(correctUrl)) {
-                img.classList.add('correct');
-            } else if (img !== selectedImg) {
-                img.classList.add('dimmed');
+        allWrappers.forEach(w => {
+            const imgElement = w.querySelector('img');
+            if (w.dataset.imageUrl === correctUrl) {
+                imgElement.classList.add('correct');
+            } else if (w !== selectedWrapper) {
+                w.classList.add('dimmed');
             }
         });
     }

@@ -37,7 +37,7 @@ public static class QuizEndpoints
                 return Results.BadRequest("Кактегория пуста");
 
             var distractorsSql = @"
-            SELECT ImageUrl
+            SELECT *
             FROM Persons 
             WHERE (Period >= @MinPeriod AND Period <= @MaxPeriod)
                 AND id != @CorrectId
@@ -45,23 +45,24 @@ public static class QuizEndpoints
             LIMIT 3;
             ";
 
-            var distractors = await connection.QueryAsync<string>(distractorsSql, new
+            var distractors = await connection.QueryAsync<Person>(distractorsSql, new
             {
                 MinPeriod = correct.Period - 3,
                 MaxPeriod = correct.Period + 2,
                 CorrectId = correct.Id
             });
 
-            var images = distractors.ToList();
-            images.Add(correct.ImageUrl);
-            var shuffledImages = images.OrderBy(_ => Guid.NewGuid()).ToList();
+            var persons = distractors.ToList();
+            persons.Add(correct);
+            var shuffledPersons = persons.OrderBy(_ => Guid.NewGuid()).ToList();
+            var shuffledOptions = shuffledPersons.Select(p => new { imageUrl = p.ImageUrl, name = p.Name }).ToList();
 
             return Results.Ok(new
             {
                 description = correct.Description,
                 correctName = correct.Name,
                 fact = correct.Fact,
-                imageOptions = shuffledImages,
+                imageOptions = shuffledOptions,
                 correctImageUrl = correct.ImageUrl
             });
         });
