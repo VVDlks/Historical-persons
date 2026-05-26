@@ -50,20 +50,63 @@ public static class DbInitializer
         var count = connection.QueryFirstOrDefault<int>("SELECT COUNT(*) FROM Categories");
         if (count == 0)
         {
-            connection.Execute("INSERT INTO Categories (ObjectCategory) VALUES ('Писатели'), ('Ученые')");
             connection.Execute(@"
-                INSERT INTO Persons (Name, Description, Fact, ImageUrl, CategoryId, Period) VALUES 
-                ('Лев Толстой', 'Русский писатель и мыслитель.', 'Написал «Войну и мир».', 'tolstoy.jpg', 1, 19),
-                ('Фёдор Достоевский', 'Русский писатель, мыслитель, философ и публицист.', 'Автор романа «Преступление и наказание».', 'dostoevsky.jpg', 1, 19),
-                ('Антон Чехов', 'Русский писатель, прозаик, драматург.', 'По профессии врач.', 'chekhov.jpg', 1, 19),
-                ('Александр Пушкин', 'Русский поэт, драматург и прозаик.', 'Наше всё.', 'pushkin.jpg', 1, 19),
-                ('Альберт Эйнштейн', 'Физик-теоретик.', 'Автор теории относительности.', 'einstein.jpg', 2, 20),
-                ('Иван Павлов', 'Учёный, физиолог.', 'Создатель науки о высшей нервной деятельности.', 'pavlov.jpg', 2, 20),
-                ('Никола Тесла', 'Изобретатель в области электротехники.', 'Известен вкладом в создание устройств на переменном токе.', 'tesla.jpg', 2, 19),
-                ('Мария Склодовская-Кюри', 'Учёный-экспериментатор.', 'Первая женщина — лауреат Нобелевской премии.', 'curie.jpg', 2, 19);
+                INSERT INTO Categories (Id, ObjectCategory) VALUES 
+                (1, 'Правители и политики'), 
+                (2, 'Ученые и изобретатели'), 
+                (3, 'Творцы и мыслители')");
+
+            connection.Execute(@"
+                INSERT INTO QuizLevels (Id, Title) VALUES 
+                (1, 'Правители и политики'), 
+                (2, 'Ученые и изобретатели'), 
+                (3, 'Философы и мыслители'), 
+                (4, 'Исторические личности')");
+
+            connection.Execute(@"
+                INSERT INTO QuizLevelCategories (QuizLevelId, CategoryId) VALUES 
+                (1, 1), 
+                (2, 2), 
+                (3, 3),
+                (4, 1), (4, 2), (4, 3);
             ");
-            connection.Execute("INSERT INTO QuizLevels (Title) VALUES ('Литература'), ('Наука')");
-            connection.Execute("INSERT INTO QuizLevelCategories (QuizLevelId, CategoryId) VALUES (1, 1), (2, 2)");
+        }
+
+        var personsCount = connection.QueryFirstOrDefault<int>("SELECT COUNT(*) FROM Persons");
+        if (personsCount == 0)
+        {
+            string filePath = "persons.tsv"; 
+            if (File.Exists(filePath))
+            {
+                var lines = File.ReadAllLines(filePath);
+
+                foreach (var line in lines.Skip(1))
+                {
+                    if (string.IsNullOrWhiteSpace(line)) 
+                        continue;
+
+                    var parts = line.Split('\t');
+
+                    if (parts.Length >= 6)
+                    {
+                        var name = parts[0].Trim();
+                        var description = parts[1].Trim();
+                        var fact = parts[2].Trim();
+                        var imageUrl = parts[3].Trim();
+
+                        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(description)) 
+                            continue;
+
+                        var period = int.Parse(parts[4].Trim());
+                        var categoryId = int.Parse(parts[5].Trim());
+
+                        connection.Execute(@"
+                            INSERT INTO Persons (Name, Description, Fact, ImageUrl, Period, CategoryId) 
+                            VALUES (@Name, @Description, @Fact, @ImageUrl, @Period, @CategoryId)",
+                            new { Name = name, Description = description, Fact = fact, ImageUrl = imageUrl, Period = period, CategoryId = categoryId });
+                    }
+                }
+            }
         }
     }
 }

@@ -40,6 +40,7 @@ public static class QuizEndpoints
             SELECT *
             FROM Persons 
             WHERE (Period >= @MinPeriod AND Period <= @MaxPeriod)
+                AND CategoryId IN @Ids
                 AND id != @CorrectId
             ORDER BY RANDOM()
             LIMIT 3;
@@ -47,9 +48,10 @@ public static class QuizEndpoints
 
             var distractors = await connection.QueryAsync<Person>(distractorsSql, new
             {
-                MinPeriod = correct.Period - 3,
-                MaxPeriod = correct.Period + 2,
-                CorrectId = correct.Id
+                MinPeriod = correct.Period - 2,
+                MaxPeriod = correct.Period + 2, 
+                CorrectId = correct.Id,
+                Ids = ids
             });
 
             var persons = distractors.ToList();

@@ -3,6 +3,14 @@ let currentQuizData = null;
 
 async function loadGame() {
     try {
+        const selectedTitle = localStorage.getItem('selectedLevelTitle');
+        if (selectedTitle) {
+            const titleEl = document.querySelector('.tab-title');
+            if (titleEl) {
+                titleEl.textContent = selectedTitle;
+            }
+        }
+
         const cachedIds = localStorage.getItem('selectedCategoryIds');
         if (!cachedIds) {
             window.location.href = window.location.protocol === 'file:' ? 'index.html' : './';
@@ -54,15 +62,17 @@ function loadImages(quize) {
     options.forEach(opt => {
         const wrapper = document.createElement('div');
         wrapper.className = 'img-wrapper';
-        wrapper.dataset.imageUrl = opt.imageUrl || opt;
+        
+        const imageUrl = opt.imageUrl || (typeof opt === 'string' ? opt : "");
+        wrapper.dataset.imageUrl = imageUrl;
 
         const picture = document.createElement('img');
-        const imageUrl = opt.imageUrl || opt;
         picture.dataset.imageUrl = imageUrl;
         picture.src = imageUrl.startsWith('images/') ? imageUrl : `images/persons/${imageUrl}`;
 
         picture.onerror = () => {
-            picture.src = `https://ui-avatars.com/api/?name=${imageUrl.split('.')[0]}&background=random`;
+            const fallbackName = opt.name ? encodeURIComponent(opt.name) : (imageUrl.split('.')[0] || "Unknown");
+            picture.src = `https://ui-avatars.com/api/?name=${fallbackName}&background=random`;
         };
 
         picture.className = 'quiz-img';

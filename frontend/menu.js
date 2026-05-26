@@ -21,7 +21,8 @@ async function loadMenu() {
             card.appendChild(title);
 
             card.addEventListener('click', () => {
-                localStorage.setItem('selectedCategoryIds', JSON.stringify(level.categoryIds))
+                localStorage.setItem('selectedCategoryIds', JSON.stringify(level.categoryIds));
+                localStorage.setItem('selectedLevelTitle', level.title);
                 window.location.href = 'game.html';
             });
 
